@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    command: bash run.sh
+    volumes:
+      - sqlite_data:/app/core
+    ports:
+      - "7755:7755"
+    environment:
+      - FLASK_APP=core/server.py
+      - GUNICORN_PORT=7755
+
+volumes:
+  sqlite_data:
