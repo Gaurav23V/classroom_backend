@@ -19,6 +19,7 @@ services:
     command: >
       bash -c "
         mkdir -p /app/data &&                           # Ensure /app/data exists
+        rm -f /app/data/store.sqlite3 &&                # Remove any existing database
         export FLASK_APP=core/server.py &&
         flask db upgrade -d core/migrations/ &&
         pytest --cov"
