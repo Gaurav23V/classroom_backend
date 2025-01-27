@@ -7,6 +7,11 @@ from core.models.assignments import Assignment, AssignmentStateEnum, GradeEnum
 
 class TestSQL:
 
+    def setup_method(self):
+        # Clear existing assignments
+        Assignment.query.delete()
+        db.session.commit()
+
     def create_n_graded_assignments_for_teacher_and_student(self, number: int = 0, teacher_id: int = 1, student_id: int = 1) -> int:
         """
         Creates 'n' graded assignments for a specified teacher and returns the count of assignments with grade 'A'.
@@ -19,17 +24,10 @@ class TestSQL:
         - int: Count of assignments with grade 'A'.
         """
         # Count the existing assignments with grade 'A' for the specified teacher
-        grade_a_counter: int = Assignment.filter(
-            Assignment.teacher_id == teacher_id,
-            Assignment.grade == GradeEnum.A
-        ).count()
+        grade_a_counter: int = 0  # Reset counter for each call
 
-        # Create 'n' graded assignments
         for _ in range(number):
-            # Randomly select a grade from GradeEnum
             grade = random.choice(list(GradeEnum))
-
-            # Create a new Assignment instance
             assignment = Assignment(
                 teacher_id=teacher_id,
                 student_id=student_id,
@@ -37,17 +35,11 @@ class TestSQL:
                 content='test content',
                 state=AssignmentStateEnum.GRADED
             )
-
-            # Add the assignment to the database session
             db.session.add(assignment)
-
-            # Update the grade_a_counter if the grade is 'A'
             if grade == GradeEnum.A:
-                grade_a_counter = grade_a_counter + 1
+                grade_a_counter += 1
 
         db.session.flush()
-
-        # Return the count of assignments with grade 'A'
         return grade_a_counter
 
     def test_count_assignments_in_each_grade(self):
@@ -55,9 +47,11 @@ class TestSQL:
 
         # Create 25 graded assignments for student 1
         self.create_n_graded_assignments_for_teacher_and_student(25, student_id=1)
-        
+
         # Create 20 graded assignments for student 1
         self.create_n_graded_assignments_for_teacher_and_student(20, student_id=2)
+
+        db.session.commit()
 
         # Define the expected results
         expected_result = []
@@ -86,13 +80,17 @@ class TestSQL:
 
         # Create and grade 5 assignments for the default teacher (teacher_id=1)
         grade_a_count_1 = self.create_n_graded_assignments_for_teacher_and_student(5)
-        
+
+        db.session.commit()
+
         # Execute the SQL query and check if the count matches the created assignments
         sql_result = db.session.execute(text(sql)).fetchall()
         assert grade_a_count_1 == sql_result[0][0]
 
         # Create and grade 10 assignments for a different teacher (teacher_id=2)
         grade_a_count_2 = self.create_n_graded_assignments_for_teacher_and_student(10, 2)
+
+        db.session.commit()
 
         # Execute the SQL query again and check if the count matches the newly created assignments
         sql_result = db.session.execute(text(sql)).fetchall()

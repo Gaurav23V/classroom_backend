@@ -1,6 +1,8 @@
 import pytest
 import json
 from tests import app
+from core import db
+from core.server import app
 
 
 @pytest.fixture
@@ -66,3 +68,10 @@ def h_principal():
     }
 
     return headers
+
+@pytest.fixture(scope='module')
+def test_app():
+    with app.app_context():
+        db.create_all()
+        yield app
+        db.drop_all()

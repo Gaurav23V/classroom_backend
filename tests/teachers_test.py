@@ -1,3 +1,6 @@
+from core.models.teachers import Teacher
+from core.models.assignments import AssignmentStateEnum
+
 def test_get_assignments_teacher_1(client, h_teacher_1):
     response = client.get(
         '/teacher/assignments',
@@ -99,3 +102,46 @@ def test_grade_assignment_draft_assignment(client, h_teacher_1):
     data = response.json
 
     assert data['error'] == 'FyleError'
+
+def test_teacher_repr():
+    teacher = Teacher(id=1, user_id=3)
+    assert repr(teacher) == '<Teacher 1>'
+
+def test_teacher_grading_unassigned_assignment(client, h_teacher_2):
+    response = client.post(
+        '/teacher/assignments/grade',
+        headers=h_teacher_2,
+        json={
+            'id': 1,  # Assignment assigned to teacher 1
+            'grade': 'A'
+        }
+    )
+    assert response.status_code == 400
+    data = response.get_json()
+    assert data['error'] == 'FyleError'
+    assert data['message'] == 'Only teacher who created the assignment can grade it'
+
+def test_teacher_grading_invalid_state_assignment(client, h_teacher_1, h_student_1):
+    # Create a new assignment in DRAFT state
+    response = client.post(
+        '/student/assignments',
+        headers=h_student_1,
+        json={
+            'content': 'Test Content'
+        }
+    )
+    assignment_id = response.get_json()['data']['id']
+
+    # Teacher tries to grade the DRAFT assignment
+    response = client.post(
+        '/teacher/assignments/grade',
+        headers=h_teacher_1,
+        json={
+            'id': assignment_id,
+            'grade': 'A'
+        }
+    )
+    assert response.status_code == 400
+    data = response.get_json()
+    assert data['error'] == 'FyleError'
+    assert data['message'] == 'Only submitted assignments can be graded'
