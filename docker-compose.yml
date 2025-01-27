@@ -1,16 +1,35 @@
-version: '3.8'
-
 services:
   web:
     build: .
     command: bash run.sh
     volumes:
-      - sqlite_data:/app/core
+      - ./core:/app/core
+      - ./tests:/app/tests
+      - sqlite_data:/app/data
     ports:
       - "7755:7755"
     environment:
       - FLASK_APP=core/server.py
+      - FLASK_ENV=development
       - GUNICORN_PORT=7755
+      - DATABASE_URL=sqlite:////app/data/store.sqlite3  # Updated to absolute path
+
+  test:
+    build: .
+    command: >
+      bash -c "
+        mkdir -p /app/data &&                           # Ensure /app/data exists
+        export FLASK_APP=core/server.py &&
+        flask db upgrade -d core/migrations/ &&
+        pytest --cov"
+    volumes:
+      - ./core:/app/core
+      - ./tests:/app/tests
+      - sqlite_data:/app/data
+    environment:
+      - FLASK_APP=core/server.py
+      - FLASK_ENV=test
+      - DATABASE_URL=sqlite:////app/data/store.sqlite3  # Updated to absolute path
 
 volumes:
   sqlite_data:
