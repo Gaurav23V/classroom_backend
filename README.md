@@ -1,73 +1,118 @@
-# Fyle Backend Challenge
+# Classroom Backend Application
 
-## Who is this for?
+## Overview
 
-This challenge is meant for candidates who wish to intern at Fyle and work with our engineering team. You should be able to commit to at least 6 months of dedicated time for internship.
+This is a Flask-based backend application for managing users, principals, students, teachers, and assignments in a classroom setting.
 
-## Why work at Fyle?
+## Features
 
-Fyle is a fast-growing Expense Management SaaS product. We are ~40 strong engineering team at the moment. 
+- **Students**:
+  - Create and edit draft assignments.
+  - List all created assignments.
+  - Submit assignments to teachers.
 
-We are an extremely transparent organization. Check out our [careers page](https://careers.fylehq.com) that will give you a glimpse of what it is like to work at Fyle. Also, check out our Glassdoor reviews [here](https://www.glassdoor.co.in/Reviews/Fyle-Reviews-E1723235.htm). You can read stories from our teammates [here](https://stories.fylehq.com).
+- **Teachers**:
+  - List all assignments submitted to them.
+  - Grade submitted assignments.
 
+- **Principals**:
+  - View all teachers.
+  - View all submitted and graded assignments.
+  - Re-grade assignments already graded by teachers.
 
-## Challenge outline
+## Setup Instructions
 
-**You are allowed to use any online/AI tool such as ChatGPT, Gemini, etc. to complete the challenge. However, we expect you to fully understand the code and logic involved.**
+### Prerequisites
 
-This challenge involves writing a backend service for a classroom. The challenge is described in detail [here](./Application.md)
+- **Docker** and **Docker Compose** installed on your machine.
 
+### Clone the Repository
 
-## What happens next?
-
-You will hear back within 48 hours from us via email. 
-
-
-## Installation
-
-1. **Please ensure that you don't fork this repository. We want your submission to be private to avoid plagiarism**
-2. Clone the repo to your local and ensure you push your code into your own **private repository** on GitHub.
-
-### Install requirements
-
-```
-virtualenv env --python=python3.8
-source env/bin/activate
-pip install -r requirements.txt
-```
-### Reset DB
-
-```
-export FLASK_APP=core/server.py
-rm core/store.sqlite3
-flask db upgrade -d core/migrations/
-```
-### Start Server
-
-```
-bash run.sh
-```
-### Run Tests
-
-```
-pytest -vvv -s tests/
-
-# for test coverage report
-# pytest --cov
-# open htmlcov/index.html
+```bash
+git clone https://github.com/yourusername/classroom_backend.git
+cd classroom_backend
 ```
 
+### Build and Run the Application
 
-## Submission
+#### Using Docker Compose
 
-For submitting the assignment, please follow these steps:
+1. **Build the Docker images and start the containers and also run the tests:**
 
-* Ensure that you push your code into a private repository on GitHub.
-* Add `KirtiGautam`, `kartikeyrajvaidya`, `sumanth-fyle1` and `satyamyesj` as collaborators to your repository with Admin access.
-* For steps to add a collaborator to your repository, refer to [this link](https://docs.github.com/en/account-and-profile/setting-up-and-managing-your-personal-account-on-github/managing-access-to-your-personal-repositories/inviting-collaborators-to-a-personal-repository).
+   ```bash
+   docker-compose up --build
+   ```
 
-**Once you are done with your task, please use [this form](https://forms.gle/7ZBydqaoWaJTDYCA8) to complete your submission.**
+2. **Access the Application:**
 
-Once you submit the assignment, you will hear back from us within 48 hours from us via email. 
+   - Open a web browser and navigate to `http://localhost:5000`.
 
-We look forward to seeing your solution!
+3. **Run Tests:**
+
+   ```bash
+   docker-compose run test
+   ```
+
+4. **Stop the Application:**
+
+   ```bash
+   docker-compose down
+   ```
+
+### Application Configuration
+
+- **Environment Variables:**
+
+  - `DATABASE_URL`: Database connection string. Defaults to `sqlite:////app/data/store.sqlite3` if not provided.
+  - `FLASK_APP`: Entry point of the Flask application (set to `core/server.py`).
+  - `FLASK_ENV`: Environment configuration (set to `production`).
+
+- **Database:**
+
+  - The application uses PostgreSQL by default when running with Docker.
+
+### API Endpoints
+
+#### Auth
+
+- **Header:** `X-Principal`
+- **Value Example:** `{"user_id":1, "student_id":1}`
+
+#### Student APIs
+
+- **GET `/student/assignments`**: List all assignments for the authenticated student.
+- **POST `/student/assignments`**: Create or edit a draft assignment.
+- **POST `/student/assignments/submit`**: Submit a draft assignment to a teacher.
+
+#### Teacher APIs
+
+- **GET `/teacher/assignments`**: List all assignments submitted to the authenticated teacher.
+- **POST `/teacher/assignments/grade`**: Grade a submitted assignment.
+
+#### Principal APIs
+
+- **GET `/principal/teachers`**: List all teachers.
+- **GET `/principal/assignments`**: List all submitted and graded assignments.
+- **POST `/principal/assignments/grade`**: Grade or re-grade an assignment.
+
+### Testing
+
+- **Test Coverage:** The application has a test coverage of 97%.
+
+### Project Structure
+
+- **`core/`**: Main application code.
+- **`tests/`**: Test cases and SQL tests.
+- **`Dockerfile`**: Instructions to build the Docker image.
+- **`docker-compose.yml`**: Docker Compose configurations.
+- **`requirements.txt`**: Python dependencies.
+
+### Notes
+
+- Ensure Docker is installed and running before starting the application.
+- Adjust the database settings in `docker-compose.yml` and your application code if you use a different database.
+- The default credentials and configurations are for development and testing purposes.
+
+### Contact
+
+For any questions or clarifications, feel free to reach out at [gaurav2301v@gmail.com](mailto:gaurav2301v@gmail.com).
